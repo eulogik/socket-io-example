@@ -2,17 +2,125 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>Socket.io demo :: Eulogik</title>
+    <style media="screen">
+      #online{
+        display: none;
+      }
+      /*#users>li>span{
+        float: right;
+      }*/
+    </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.1/socket.io.slim.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+
+
     <script>
-      var socket = io();
+
+    function timeSince(date) {
+
+  var seconds = Math.floor((new Date() - date) / 1000);
+
+  var interval = Math.floor(seconds / 31536000);
+
+  if (interval > 1) {
+    return interval + " years";
+  }
+  interval = Math.floor(seconds / 2592000);
+  if (interval > 1) {
+    return interval + " months";
+  }
+  interval = Math.floor(seconds / 86400);
+  if (interval > 1) {
+    return interval + " days";
+  }
+  interval = Math.floor(seconds / 3600);
+  if (interval > 1) {
+    return interval + " hours";
+  }
+  interval = Math.floor(seconds / 60);
+  if (interval > 1) {
+    return interval + " minutes";
+  }
+  return Math.floor(seconds) + " seconds";
+}
+
+var $users = new Array();
+
+      $(function () {
+        var people_online = new Array();
+        var socket = io();
+
+        $('form').submit(function(){
+          if($('#user').val()!=''){
+          socket.emit('people online', $('#user').val());
+          $('#user').val('');
+          $(this).hide();
+          $('#online').show();
+          return false;
+          }
+          else {
+             $('.form-group').addClass('has-danger').find('#user').addClass('form-control-danger');
+             return false;
+          }
+        });
+
+        socket.on('online now', function(users){
+            $users = users;
+            updateUsers();
+        });
+
+
+      });
+      function updateUsers(){
+        $('#users').empty();
+        $.each($users, function(i){
+          $('#users').append($('<li class="list-group-item justify-content-between">').html($users[i].name+' <small>'+timeSince($users[i].since)+'</small>'));
+        });
+        console.log('time updated');
+
+      }
+
+      var t = setInterval(updateUsers, 1000);
+
     </script>
+
   </head>
   <body>
+    <div class="container">
+      <h1>
+        Socket.io Demo
+        <small class="text-muted">by Eulogik</small>
+      </h1>
+<hr>
+      <div class="row justify-content-md-center">
+        <div class="col-lg-6">
 
-    <form action="">
-      <input id="m" autocomplete="off" /><button>Send</button>
-    </form>
+          <form id="login" action="">
+            <div class="card">
+              <div class="card-block">
+                <h4 class="card-title">Login</h4>
+                <div class="form-group">
+                  <input type="text"  class="form-control" id="user" placeholder="Enter username">
+                </div>
+                <button type="submit" class="btn btn-primary">Login &raquo;</button>
+              </div>
+            </div>
 
+          </form>
+        </div>
+      </div>
+        <div id="online">
+          <h3>Users online</h2>
+          <ul class="list-group" id="users">
+
+          </ul>
+
+        </div>
+  </div>
   </body>
 </html>
